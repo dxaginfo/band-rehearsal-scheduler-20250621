@@ -4,6 +4,7 @@ const Rehearsal = require('./Rehearsal');
 const BandMember = require('./BandMember');
 const Attendance = require('./Attendance');
 const Availability = require('./Availability');
+const RehearsalAttendance = require('./RehearsalAttendance');
 
 // Band to User (owner) relationship
 Band.belongsTo(User, {
@@ -36,11 +37,11 @@ Band.hasMany(Rehearsal, {
 });
 
 Rehearsal.belongsTo(User, {
-  foreignKey: 'createdById',
-  as: 'createdBy',
+  foreignKey: 'createdBy',
+  as: 'creator',
 });
 User.hasMany(Rehearsal, {
-  foreignKey: 'createdById',
+  foreignKey: 'createdBy',
   as: 'createdRehearsals',
 });
 
@@ -53,6 +54,18 @@ Rehearsal.belongsToMany(User, {
 User.belongsToMany(Rehearsal, {
   through: Attendance,
   as: 'rehearsals',
+  foreignKey: 'userId',
+});
+
+// Rehearsal attendance (for newer implementation)
+Rehearsal.belongsToMany(User, {
+  through: RehearsalAttendance,
+  as: 'attendeesDetailed',
+  foreignKey: 'rehearsalId',
+});
+User.belongsToMany(Rehearsal, {
+  through: RehearsalAttendance,
+  as: 'rehearsalsDetailed',
   foreignKey: 'userId',
 });
 
@@ -78,4 +91,5 @@ module.exports = {
   BandMember,
   Attendance,
   Availability,
+  RehearsalAttendance,
 };
