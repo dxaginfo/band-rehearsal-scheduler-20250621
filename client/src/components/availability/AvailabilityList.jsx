@@ -20,7 +20,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
-import { useDeleteAvailabilityMutation } from '../../features/availability/availabilityApiSlice';
+import { useDeleteAvailabilityMutation, useUpdateAvailabilityMutation } from '../../features/availability/availabilityApiSlice';
 import AvailabilityTimeSlotDialog from './AvailabilityTimeSlotDialog';
 import { formatTime, formatDate } from '../../utils/dateUtils';
 import ConfirmDialog from '../ui/ConfirmDialog';
@@ -36,6 +36,7 @@ function AvailabilityList({ availabilityData, onAvailabilityChanged, isPersonal 
   const [slotToDelete, setSlotToDelete] = useState(null);
 
   const [deleteAvailability, { isLoading: isDeleting }] = useDeleteAvailabilityMutation();
+  const [updateAvailability, { isLoading: isUpdating }] = useUpdateAvailabilityMutation();
 
   const handleEditSlot = (slot) => {
     setEditingSlot(slot);
@@ -55,6 +56,25 @@ function AvailabilityList({ availabilityData, onAvailabilityChanged, isPersonal 
       onAvailabilityChanged();
     } catch (err) {
       console.error('Failed to delete availability:', err);
+    }
+  };
+  
+  const handleSave = async (data) => {
+    try {
+      // Update the existing availability slot
+      await updateAvailability({
+        id: editingSlot.id,
+        ...data,
+        isRecurring: editingSlot.isRecurring,
+        dayOfWeek: editingSlot.dayOfWeek,
+        specificDate: editingSlot.specificDate,
+        isException: editingSlot.isException
+      }).unwrap();
+      
+      setOpenDialog(false);
+      onAvailabilityChanged();
+    } catch (err) {
+      console.error('Failed to update availability:', err);
     }
   };
 
@@ -171,6 +191,7 @@ function AvailabilityList({ availabilityData, onAvailabilityChanged, isPersonal 
         onSave={handleSave}
         initialData={editingSlot}
         dayName={selectedDay !== null ? dayNames[selectedDay] : ''}
+        isLoading={isUpdating}
       />
 
       <ConfirmDialog
